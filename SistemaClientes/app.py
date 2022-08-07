@@ -11,7 +11,10 @@ Elija una opción:
 5. Agregar venta
 6. Mostrar ventas por cliente
 7. Mostrar todas las ventas
-8. Salir
+8. Agregar cliente y venta
+9. Agregar Producto
+10. Mostrar Productos
+11. Salir
 
 Su eleccion:"""
 
@@ -19,7 +22,7 @@ def menu():
     connection =database.connect()
     database.createTables(connection)
     
-    while (user_input := input(MENU_PROMPT)) != "8":
+    while (user_input := input(MENU_PROMPT)) != "11":
         if user_input == '1':
             prompt_add_client(connection)
         elif user_input == '2':
@@ -33,7 +36,14 @@ def menu():
         elif user_input == '6':
             prompt_get_ventas_by_cliente(connection)   
         elif user_input == '7':
-            prompt_get_ventas_data_clientes(connection)                   
+            prompt_get_ventas_data_clientes(connection) 
+        elif user_input == '8':
+            prompt_get_ventas_data_clientes(connection)   
+        elif user_input == '9':
+            prompt_add_product(connection)
+        elif user_input == '10':
+            prompt_get_products(connection)   
+                                             
         else:
             print("Opción inválida")
 
@@ -75,13 +85,15 @@ def prompt_add_venta(connection):
     if fecha.lower() == 'h':
         fecha=datetime.datetime.now().strftime("%d/%m/%Y")
     monto_venta = float(input("Monto de la venta: "))
-    while True:
-        cliente_id = int(input("ID del cliente: "))
-        try:
-            database.addVenta(connection, fecha, monto_venta, cliente_id)
-            break
-        except Exception:
-            print('El cliente no existe')
+    
+    cliente_id = int(input("ID del cliente: "))
+    product_id = int(input("ID del producto: "))
+    if database.getClientById(connection, cliente_id) is None or database.getProductosById(connection, product_id) is None:
+        print("Cliente o producto no encontrado")
+    else:
+        database.addVenta(fecha, monto_venta, cliente_id, product_id)
+        print("Venta agregada")
+    
 #opcion 6
 def prompt_get_ventas(connection):
     ventas = database.getVentas(connection)
@@ -108,6 +120,20 @@ def prompt_get_ventas_by_cliente(connection):
     else:    
         for venta in ventas:
             print(venta)      
-      
+
+
+def prompt_add_product(connection):
+    nombre = input("Nombre: ")
+    precio = float(input("Precio: "))
+    database.addProducto(connection, nombre, precio)
+    
+def prompt_get_products(connection):
+    products = database.getProductos(connection)
+    if len(products) == 0:    
+        print('No se encontró ningun producto')
+    else:    
+        for product in products:
+            print(product)    
+        
             
 menu()    
